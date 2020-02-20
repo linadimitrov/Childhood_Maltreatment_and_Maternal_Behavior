@@ -1,0 +1,87 @@
+libname NMIS"/home/linavd0/NMIS/Updated_ICIS_Analysis"; 
+run; 
+ 
+proc means data=nmis.nmis_data_lina2 nmiss; 
+var yearseduself income4morp emabuse PhAbuse Sxabuse Eneglect Pneglect Violence raceself ethnicityself  
+d1_affcomm d2_role d3_disorient d4_neg d5_withdrawal sexbaby income_4month; 
+run; 
+ 
+ 
+*summing the 6 ACE items for total score; 
+*dichotomizing race and ethnicity; 
+*missing indicators for dem stats; 
+data lina3; 
+set nmis.nmis_data_lina2; 
+AbNegSeverity=sum(EmAbuse+PhAbuse+Sxabuse+Eneglect+Pneglect+Violence); 
+if raceself=. then raceself_dichot=9; 
+else if raceself=1 then raceself_dichot=1; 
+else if raceself in (2,3,4,5,6) then raceself_dichot=2; 
+if ethnicityself=. then ethnicityself_dichot=9; 
+else if ethnicityself=1 then ethnicityself_dichot=1; 
+else if ethnicityself in (2,3) then ethnicityself_dichot=2; 
+if sexbaby=. then sexbaby=9; 
+if income4morp=. then income_4month=9; 
+if yearseduself=. then yearseduself=9; 
+lg_D5_withdrawal=log10(D5_Withdrawal); 
+run; 
+ 
+*regression predicting D1 from severity; 
+proc reg data=lina3; 
+model D1_Affcomm=AbNegSeverity raceself_dichot income4morp 
+/stb; 
+run; 
+*nothing sig, consisten with previous; 
+ 
+*regression predicting D2; 
+proc reg data=lina3; 
+model D2_role=AbNegSeverity income4morp 
+/stb; 
+run; 
+*regression predicting D3; 
+proc reg data=lina3; 
+model D3_disorient=AbNegSeverity raceself_dichot ethnicityself_dichot income4morp 
+/stb; 
+run; 
+*regression predicting D4; 
+proc reg data=lina3; 
+model D4_Neg=AbNegSeverity raceself_dichot yearseduself 
+/stb; 
+run; 
+*regression predicting lgD5; 
+proc reg data=lina3; 
+model lg_D5_withdrawal=AbNegSeverity raceself_dichot 
+/stb; 
+run; 
+ 
+*regression predicting D1 from yes/no variables; 
+proc reg data=lina3; 
+model D1_Affcomm=raceself_dichot income4morp 
+emabuse phabuse sxabuse eneglect pneglect violence/stb; 
+run; 
+ 
+*regression predicting D2 from yes/no; 
+proc reg data=lina3; 
+model D2_role=income4morp 
+emabuse phabuse sxabuse eneglect pneglect violence/stb; 
+run; 
+ 
+*regression predicting D3 from yes/no; 
+proc reg data=lina3; 
+model D3_disorient=raceself_dichot ethnicityself_dichot income4morp 
+emabuse phabuse sxabuse eneglect pneglect violence/stb; 
+run; 
+ 
+*regression predicting D4 from yes/no; 
+proc reg data=lina3; 
+model D4_Neg=raceself_dichot yearseduself 
+emabuse phabuse sxabuse eneglect pneglect violence/stb; 
+run; 
+ 
+*regression predicting lgD5 from yes/no; 
+proc reg data=lina3; 
+model lg_D5_withdrawal=raceself_dichot  
+emabuse phabuse sxabuse eneglect pneglect violence/stb; 
+run; 
+ 
+ 
+
